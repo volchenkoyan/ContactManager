@@ -20,65 +20,51 @@ namespace ContactManager
 			base.OnCreate (savedInstanceState);
 			SetContentView (Resource.Layout.Main);
 			sqldb = new Database ("contact_db");
-
-			List<string> names_for_delete = new List <string>();
-			//List<string> contacts = new List<string>();
-
-			Android.Database.ICursor sqldb_cursor = sqldb.GetRecordCursor();
-			while(sqldb_cursor.MoveToNext ()) {
-				//contacts.Add(sqldb_cursor.GetString (sqldb_cursor.GetColumnIndex ("FirstName")) + " "+ sqldb_cursor.GetString (sqldb_cursor.GetColumnIndex ("LastName")));
-				contacts.Add(new Contact(sqldb_cursor.GetString (sqldb_cursor.GetColumnIndex ("FirstName")) + " "+ sqldb_cursor.GetString (sqldb_cursor.GetColumnIndex ("LastName")),sqldb_cursor.GetString(sqldb_cursor.GetColumnIndex("Phone"))));
-				//names_for_delete.Add(sqldb_cursor.GetString(sqldb_cursor.GetColumnIndex("FirstName")));
-			}
-
-
 			list_contacts = FindViewById<ListView> (Resource.Id.list_contacts);
-		
 			list_contacts.Adapter = new ContactAdapter(this,contacts);
 			list_contacts.ChoiceMode = ChoiceMode.Multiple;
-				}
+			LoadContacts ();
+		 }
 
-		/*void OnSelection ()
+		public void LoadContacts()
 		{
-			//Dictionary<string,object> checked_names = (Dictionary<string,object>) list_contacts.Adapter.GetItem(FindViewById<ListView>(Resource.Id.list_contacts).GetItemIdAtPosition);
-			var checked_items = FindViewById<ListView> (Resource.Id.list_contacts).CheckedItemPositions;
-						for (var i = 0; i < checked_items.Size (); i++) {
-				//checked_names [i] = list_contacts.GetItemAtPosition((int)checked_items.KeyAt(i)).ToString();
-				//var temp = list_contacts.GetItemAtPosition(checked_items.KeyAt (i)).GetType().GetProperties () [2].ToString();
-				//var kek = (Contact)list_contacts.Adapter.GetItem(checked_items.KeyAt(i));
-				//object val = list_contacts.GetItemAtPosition(checked_items.KeyAt(i));
-				//result = contacts.Find (val);
-				Android.Widget.Toast.MakeText (this, temp, Android.Widget.ToastLength.Long).Show ();
+			contacts.Clear ();
+			Android.Database.ICursor sqldb_cursor = sqldb.GetRecordCursor();
+			while(sqldb_cursor.MoveToNext ()) {
+				contacts.Add(new Contact(sqldb_cursor.GetString (sqldb_cursor.GetColumnIndex ("FirstName")) + " "+ sqldb_cursor.GetString (sqldb_cursor.GetColumnIndex ("LastName")),sqldb_cursor.GetString(sqldb_cursor.GetColumnIndex("Phone"))));
 			}
 
-		}*/
+			list_contacts = FindViewById<ListView> (Resource.Id.list_contacts);
+			list_contacts.Adapter = new ContactAdapter(this,contacts);
+			list_contacts.ChoiceMode = ChoiceMode.Multiple;
+		}
 
-		
+		void OnSelection ()
+		{
+			var checked_items = FindViewById<ListView> (Resource.Id.list_contacts).CheckedItemPositions;
+			for (int i = 0; i < checked_items.Size (); i++) {
+				var temp = list_contacts.GetItemAtPosition(checked_items.KeyAt(i)).Cast<Contact>();
+				var t_name = temp.name.Split(new char [] {' '}, System.StringSplitOptions.RemoveEmptyEntries);
+				sqldb.DeleteRecord (t_name [0], t_name [1]);
+			}
+			LoadContacts ();
+		}
 
 		public override bool OnCreateOptionsMenu (IMenu menu)
 		{
-			//return base.OnCreateOptionsMenu (menu);
 			MenuInflater.Inflate(Resource.Menu.menu_main, menu);
-			//base.OnCreateOptionsMenu (menu, menuInflater);
-			//return true;
 			return base.OnCreateOptionsMenu (menu);
 		}
 
 		public override bool OnOptionsItemSelected(IMenuItem item)
 		{
-			//switch (item.ItemId) {
-			//case Resource.Id.action_add_contact:
 			if (item.ItemId == Resource.Id.action_add_contact) {
 				StartActivity (typeof(AddUser));
-				//Android.Widget.Toast.MakeText (this, "ok", Android.Widget.ToastLength.Short).Show ();
 				return true;
 			}
 			if (item.ItemId == Resource.Id.action_delete_contact) {
 				OnSelection();
 			}
-			
-			//default:
-			//	throw new Java.Lang.IllegalArgumentException ();
 			return base.OnOptionsItemSelected(item);
 		}
 			
@@ -121,6 +107,15 @@ namespace ContactManager
 			view.FindViewById<TextView> (Resource.Id.label).Text = item.name;
 			view.FindViewById<TextView> (Resource.Id.phone).Text = item.phone;
 			return view;
+		}
+	}
+
+	public static class ObjectHelper
+	{
+		public static T Cast<T>(this Java.Lang.Object obj) where T : class
+		{
+			var PropertyInfo = obj.GetType ().GetProperty ("Instance");
+			return PropertyInfo == null ? null : PropertyInfo.GetValue (obj, null) as T;
 		}
 	}
 

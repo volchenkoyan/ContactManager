@@ -18,6 +18,7 @@ namespace ContactManager
 	{
 		EditText name, lastname, phone;
 		Button add_contact;
+		ImageView add_photo;
 		Database sqldb;
 		protected override void OnCreate (Bundle savedInstanceState)
 		{
@@ -35,9 +36,10 @@ namespace ContactManager
 				Android.Widget.Toast.MakeText(this, sqldb.Message, Android.Widget.ToastLength.Long).Show ();
 				StartActivity(typeof(MainActivity));
 			};
-
-			// Create your application here
+				
 		}
+
 	}
+		
 }
 

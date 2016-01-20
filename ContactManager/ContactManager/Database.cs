@@ -51,13 +51,11 @@ namespace ContactManager
 				sqldb_message = "";
 				string sqldb_location = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
 				string sqldb_path = Path.Combine(sqldb_location,sqldb_name);
-				//string sqldb_path = "/data/data/ContactManager.ContactManager/databases/";
 				bool sqldb_exists = File.Exists(sqldb_path);
 				if(!sqldb_exists)
 				{
 					
 					sqldb = SQLiteDatabase.OpenOrCreateDatabase(sqldb_path,null);
-					//sqldb.ExecSQL("PRAGMA user_version = 2");
 					sqldb_query = "CREATE TABLE IF NOT EXISTS Contact (_id INTEGER PRIMARY KEY AUTOINCREMENT, FirstName VARCHAR, LastName VARCHAR, " +
 						"Phone VARCHAR, Photo VARCHAR);";
 					sqldb.ExecSQL(sqldb_query);
@@ -66,9 +64,6 @@ namespace ContactManager
 				else
 				{
 					sqldb = SQLiteDatabase.OpenDatabase(sqldb_path,null,DatabaseOpenFlags.OpenReadwrite);
-					//sqldb_query = "CREATE TABLE IF NOT EXISTS Contact (_id INTEGER PRIMARY KEY AUTOINCREMENT, FirstName VARCHAR, LastName VARCHAR, " +
-					//	"Phone VARCHAR, Photo VARCHAR);";
-					//sqldb.ExecSQL(sqldb_query);
 					sqldb_message = "Database:"+sqldb_name+" opened";
 				}
 				sqldb_available=true;
@@ -93,13 +88,13 @@ namespace ContactManager
 			}
 		}
 
-		public void DeleteRecord(int iId)
+		public void DeleteRecord(string sFirstName, string sLastName)
 		{
 			try
 			{
-				sqldb_query = "DELETE FROM Contact WHERE _id = '"+iId+"';";
+				sqldb_query = "DELETE FROM Contact WHERE _id = (SELECT _id FROM Contact WHERE FirstName = '"+sFirstName+"' AND LastName = '"+sLastName+"');";
 				sqldb.ExecSQL(sqldb_query);
-				sqldb_message = "Record "+iId+" deleted";
+				//sqldb_message = "Record "+iId+" deleted";
 			}
 			catch(SQLiteException ex)
 			{
@@ -112,7 +107,6 @@ namespace ContactManager
 			Android.Database.ICursor sqldb_cursor = null;
 			try
 			{
-				sqldb_query = 
 				sqldb_query = "SELECT * FROM Contact ORDER BY FirstName;";
 				//sqldb_query = "SELECT * FROM Contact;";
 				sqldb_cursor = sqldb.RawQuery(sqldb_query,null);
@@ -127,23 +121,7 @@ namespace ContactManager
 			}
 			return sqldb_cursor;
 		}
-
-		/*public Android.Database.ICursor GetCountOfRecords()
-		{
-			Android.Database.ICursor sqldb_cursor = null;
-			try
-			{
-				sqldb_query = "SELECT count(FirstName) FROM Contact;";
-				//sqldb.ExecSQL(sqldb_query);
-				sqldb_cursor = sqldb.RawQuery(sqldb_query,null);
-				//int cnt = sqldb_cursor.Count;
-			}
-			catch(SQLiteException ex)
-			{
-				sqldb_message = ex.Message;
-			}
-			return sqldb_cursor; 
-		}*/
+			
 	}
 }
 

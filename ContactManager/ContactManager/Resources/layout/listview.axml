@@ -15,5 +15,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/label"
         android:textSize="12sp"
-        android:textColor="@android:color/holo_orange_dark" />
+        android:textColor="@android:color/holo_orange_dark"
+        android:paddingLeft="8sp" />
 </RelativeLayout>
